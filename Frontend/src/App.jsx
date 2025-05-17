@@ -1,23 +1,22 @@
 
 import './App.css'
 
+import Landing from "./pages/landing/Landing.jsx"
+import { BrowserRouter as Router ,Routes, Route} from 'react-router-dom'
+import Login from './pages/login/Login.jsx'
+import Notfound from './pages/login/Notfound.jsx'
+import AllClubs from './pages/clubs/AllClubs.jsx'
+
 function App() {
   return(
-    <div
-    className='
-    text-center
-    flex
-    justify-center
-    items-center
-    bg-red-400
-    text-white
-    border-none
-    rounded-sm
-    py-10
-    '
-    >
-      Starting The Clubs management system.
-    </div>
+   <Router>
+    <Routes>
+     <Route path='/' element={<Landing/>} />
+     <Route path='/login' element={<Login/>} />
+     <Route path='/clubs' element={<AllClubs/>} />
+     <Route path='*' element={<Notfound/>} />
+    </Routes>
+   </Router>
   )
 }
 

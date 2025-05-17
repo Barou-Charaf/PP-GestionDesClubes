@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+@layer base{
+    *{
+        @apply m-0 p-0   box-border tracking-wide selection:text-white  selection:bg-violet-600;
+        
+    }
+    button{
+        @apply selection:bg-orange-500
+    }
+}
+
+@layer components{
+
+    .card{
+        @apply w-[100%] sm:w-[80%] md:w-[30%];
+    }
+    .btn{
+        @apply bg-violet-600 flex justify-center duration-100 ease-out items-center text-white text-sm font-medium  py-2 px-6   rounded cursor-pointer;
+    }
+    .btn:hover{
+        @apply bg-violet-500;
+    }
+    .btn:disabled{
+        @apply bg-gray-400 cursor-not-allowed;
+    }
+    .btn:active{
+        @apply bg-violet-700 scale-98;
+    }
+
+    .images{
+        @apply w-[50%]   h-80 absolute right-0
+    }
+
+    .link{
+        @apply text-blue-500
+        text-[.8rem] font-bold ;
+    }
+    .link:active{
+        @apply text-blue-600 ;
+    }
+    .link:hover{
+        @apply text-blue-400;
+    }
+    .sh{
+        box-shadow: -20px 0px 25px #7e22fe3c ;
+    }
+    .sht{
+        box-shadow: -20px -1px 25px #7e22fe3c ;
+    }
+    .flexCenter{
+        @apply flex items-center justify-center;
+    }
+
+}
+
+@layer utilities {
+    .potato-container::before,
+    .potato-container::after {
+      content: '';
+      position: absolute;
+      background-color: theme('colors.purple.500');
+      opacity: .8;
+      border-radius: 80% 30% 55% 47%;
+      width: 10rem;
+      height: 9rem;
+     z-index: -1;
+  
+  }
+}
