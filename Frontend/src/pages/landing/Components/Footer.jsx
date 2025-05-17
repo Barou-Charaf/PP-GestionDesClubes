@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import BigFooter from "../../BigFooter.jsx"
 
 export default function Footer() {
   return (
@@ -36,22 +37,13 @@ export default function Footer() {
                 <Link to="/login">Log In</Link>
             </button>
         </div>
-        <div className='flex  w-full justify-between items-center p-4 bg-gray-100'>
-          <div className='flex gap-5'>
-          <span className='size-10 flexCenter rounded-full border-amber-400 border-[0.09rem]  text-violet-600'><a href="https://facebook.com" >
-                  f
-          </a></span>
-          <span className='size-10'>f</span>
-          <span className='size-10'>f</span>
-          <span className='size-10'>f</span>
-          </div>
-          <p
-          className='text-gray-500 text-[.8rem]'
-          >
-          COPYRIGHT &copy; 2025 - <u>TERMS & CONDITIONS  PRIVACY POLICY</u>
-          </p>
-          <div></div>
-        </div>
+        <div
+        className='w-full'
+        >
+      <BigFooter 
+      />
+     </div>
+
     </section>
   )
 }

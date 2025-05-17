@@ -6,6 +6,7 @@ import HeroSection from "./Components/HeroSection.jsx"
 import Qouts from "./Components/Qouts.jsx"
 import ThirdSection from "./Components/ThirdSection.jsx"
 
+
 export default function Landing() {
   return (
     <section className="
@@ -20,7 +21,7 @@ export default function Landing() {
     <FeatursSection />
     <ThirdSection />
     <Qouts />
-    <Footer/>
+    <Footer />
     </section>
     
   )
