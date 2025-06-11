@@ -5,6 +5,11 @@ import Cookies from 'js-cookie';
 import { DownloadCloud } from 'lucide-react';
 import { toast } from 'react-toastify';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+
+  faSpinner
+} from '@fortawesome/free-solid-svg-icons';
 export default function MaterialsReservations({ token }) {
   const queryClient = useQueryClient();
 
@@ -47,7 +52,13 @@ export default function MaterialsReservations({ token }) {
     },
   });
 
-  if (isLoading) return <p className="p-4 text-gray-500">Loading…</p>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center text-green-400 items-center py-10 mt-50">
+        <FontAwesomeIcon icon={faSpinner} spin size="2x" />
+      </div>
+    );
+  }
   if (isError)   return <p className="p-4 text-red-500">Error: {error.message}</p>;
 
   return (
@@ -127,7 +138,7 @@ export default function MaterialsReservations({ token }) {
           </tbody>
         </table>
 
-        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
+        {/* <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
           <span className="text-sm text-gray-700">Previous</span>
           <div className="inline-flex gap-1 text-sm">
             <button className="px-2 py-1 rounded bg-indigo-600 text-white">1</button>
@@ -135,7 +146,7 @@ export default function MaterialsReservations({ token }) {
             <button className="px-2 py-1 rounded hover:bg-gray-200">3</button>
           </div>
           <span className="text-sm text-gray-700">Next</span>
-        </div>
+        </div> */}
       </div>
     </section>
   );

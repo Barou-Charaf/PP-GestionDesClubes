@@ -128,7 +128,7 @@ export default function Login() {
               </label>
             }
 
-            <p className='text-[.7rem] w-[90%]'>Forget password?</p>
+            {/* <p className='text-[.7rem] w-[90%]'>Forget password?</p> */}
             <button
               className='btn w-[92%] my-3 mx-auto bg-purple-600 py-2'
             >
@@ -137,14 +137,14 @@ export default function Login() {
           </span>
         </form>
 
-        <div className='w-full md:w-[65%] text-[.7rem] flex font-light sm:flex-row gap-5 flex-col justify-between items-center'>
-          <p>Don't have an account?</p>
-          <button
+        {/* <div className='w-full md:w-[65%] text-[.7rem] flex font-light sm:flex-row gap-5 flex-col justify-between items-center'> */}
+          {/* <p>Don't have an account?</p> */}
+          {/* <button
             className='btn w-full md:w-fit text-[.7rem] bg-gray-700 active:opacity-70 py-[.4rem] opacity-50'
           >
             Sign up
           </button>
-        </div>
+        </div> */}
       </section>
 
       {/* Optional “Back” button (comment kept exactly as you had it) */}

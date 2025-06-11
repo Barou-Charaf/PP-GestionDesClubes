@@ -4,6 +4,11 @@ import AddRoom from "../components/AddRoom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+ 
+  faSpinner
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function ManageRooms({ token }) {
   const [showAdd, setShowAdd] = useState(false);
@@ -65,7 +70,13 @@ export default function ManageRooms({ token }) {
     },
   });
 
-  if (isLoading) return <div>Loading...</div>;
+ if (isLoading) {
+    return (
+      <div className="flex justify-center text-green-400 items-center py-10 mt-50">
+        <FontAwesomeIcon icon={faSpinner} spin size="2x" />
+      </div>
+    );
+  }
   if (isError)   return <div className="text-red-500">Error: {error.message}</div>;
 
   return (
@@ -140,7 +151,7 @@ export default function ManageRooms({ token }) {
             <AddRoom room={showAdd} setRoom={setShowAdd} token={token} />
           )}
 
-        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
+        {/* <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
           <span className="text-sm text-gray-700">Previous</span>
           <div className="inline-flex gap-1 text-sm">
             <button className="px-2 py-1 rounded bg-indigo-600 text-white">1</button>
@@ -148,7 +159,7 @@ export default function ManageRooms({ token }) {
             <button className="px-2 py-1 rounded hover:bg-gray-200">3</button>
           </div>
           <span className="text-sm text-gray-700">Next</span>
-        </div>
+        </div> */}
       </div>
     </section>
   );

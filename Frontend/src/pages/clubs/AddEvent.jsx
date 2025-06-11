@@ -83,7 +83,7 @@ const AddEvent = ({ clubId: propClubId, setEvent }) => {
   };
 
   return (
-    <div className="w-full h-[450%] bg-[#0000008a] absolute inset-0 pt-40 z-100">
+    <div className="w-full h-[450%] bg-[#0000008a] absolute inset-0 pt-40 z-[1000000] ">
       <div
         className="w-[80%] m-auto p-15 bg-gradient-to-b from-[#e6f0ff] to-white"
         style={{ borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,.1)' }}

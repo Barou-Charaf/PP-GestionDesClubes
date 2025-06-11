@@ -185,7 +185,7 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
 
 
   return (
-    <div className="bg-[#000000aa] h-[450%] p-6 pt-20 absolute z-80 top-0 right-0 left-0 bottom-0 ">
+    <div className="bg-[#000000aa] h-[450%] p-6 pt-20 absolute z-[1000000] top-0 right-0 left-0 bottom-0 ">
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left panel */}
         <div className="col-span-1 relative flex flex-col items-center bg-gray-100 p-6 rounded-lg">

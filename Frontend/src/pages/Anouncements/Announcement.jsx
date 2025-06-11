@@ -64,7 +64,7 @@ export default function Announcement() {
         <Header />
       </section>
 
-      <section className="bg-gradient-to-b from-[#0095ff32] to-white min-h-[70vh] pt-30 px-10 relative">
+      <section className="bg-gradient-to-b from-[#0095ff32] to-white min-h-[70vh] pt-30 px-10 relative mb-30">
         {event ? (
           <>
             <div className="flex w-full h-full justify-center items-center">

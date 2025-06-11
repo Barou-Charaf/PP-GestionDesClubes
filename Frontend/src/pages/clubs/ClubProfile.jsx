@@ -140,7 +140,7 @@ export default function ClubProfile() {
   return (
     <>
       <div className="bg-gray-100 pl-5 pt-5 pr-5">
-        <Header login={login} />
+        <Header login={role !== "admin_club" || role !== "super_admin" ? login : !login} />
       </div>
 
       <main className="p-5 pt-16 bg-gradient-to-b from-[#e7f0ff] to white w-full">
@@ -264,11 +264,11 @@ export default function ClubProfile() {
             )}
           </div>
 
-          <p className="text-center p-8 font-extrabold text-gray-600">
+          {/* <p className="text-center p-8 font-extrabold text-gray-600">
             <a onClick={() => console.log('load more')} className="hover:underline cursor-pointer">
               Paginations or Load on scroll...
             </a>
-          </p>
+          </p> */}
         </section>
 
         {/* ─── modals (own-club only) ─── */}

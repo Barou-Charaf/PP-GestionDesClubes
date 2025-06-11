@@ -82,7 +82,7 @@ const AddAnouce = ({ anouce, setAnouce,onSuccess }) => {
 
 
   return (
-    <div className="w-full h-[450%] bg-[#0000008a] absolute z-100 top-0 left-0 right-0 pt-40">
+    <div className="w-full h-[450%] bg-[#0000008a] absolute z-[1000000] top-0 left-0 right-0 pt-40">
       <div className="w-[80%] m-auto p-15 bg-gradient-to-b from-[#e6f0ff] to-white rounded shadow">
         <h2 className="text-2xl font-extrabold text-gray-800">Add Announcement</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
