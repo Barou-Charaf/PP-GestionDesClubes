@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+// src/pages/Admin/Admin.jsx
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+
 import Sidebar from './components/Sidebar';
 import ManageClubs from './pages/ManageClubs';
 import RoomsReservations from './pages/RoomsReservations';
@@ -7,7 +10,20 @@ import MaterialsReservations from './pages/MaterialsReservations';
 import ManageRooms from './pages/ManageRooms';
 import Users from './pages/Users';
 
+import { Contex } from '../../App';
+
 export default function Admin() {
+  const navigate = useNavigate();
+  const { role } = useContext(Contex);
+
+  /* ---- hard gate: only super_admin allowed ---- */
+  useEffect(() => {
+    if (role !== 'super_admin') {
+      navigate('/login');            // or navigate('/login');
+    }
+  }, [role, navigate]);
+  /* --------------------------------------------- */
+
   const [active, setActive] = useState('manage-clubs');
   const token = Cookies.get('auth_token');
 

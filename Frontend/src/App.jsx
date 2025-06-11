@@ -1,11 +1,11 @@
 // src/App.jsx
 import './App.css';
-import 'react-toastify/dist/ReactToastify.css';         // 1) Toastify CSS
+import 'react-toastify/dist/ReactToastify.css';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ToastContainer } from 'react-toastify';       // 2) ToastContainer
+import { ToastContainer } from 'react-toastify';
 
 import Landing from './pages/landing/Landing.jsx';
 import Login from './pages/login/Login.jsx';
@@ -22,8 +22,25 @@ export const Contex = createContext();
 
 function App() {
   const queryClient = new QueryClient();
-  const [login, setLogin] = useState(false);
-  const [role, setRole] = useState('');
+
+  /* -------- hydrate from localStorage -------- */
+  const [login, setLogin] = useState(localStorage.getItem('isLoggedIn') === 'true');
+  const [role, setRole] = useState(localStorage.getItem('role') || '');
+  /* ------------------------------------------- */
+
+  /* keep localStorage in sync when these change */
+  useEffect(() => {
+    localStorage.setItem('isLoggedIn', login ? 'true' : 'false');
+  }, [login]);
+
+  useEffect(() => {
+    if (role) {
+      localStorage.setItem('role', role);
+    } else {
+      localStorage.removeItem('role');
+    }
+  }, [role]);
+  /* ------------------------------------------- */
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -54,7 +71,6 @@ function App() {
           </Routes>
         </Router>
 
-        {/* 3) ToastContainer at the app root: */}
         <ToastContainer
           position="top-right"
           autoClose={3000}
