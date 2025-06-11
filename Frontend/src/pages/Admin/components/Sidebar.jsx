@@ -20,7 +20,7 @@ const MENU_ITEMS = [
   { id: "users",                  label: "Users",                    Icon: UsersIcon },
 ];
 
-export default function Sidebar({ active, onSelect }) {
+export default function Sidebar({ active, onSelect, token }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (

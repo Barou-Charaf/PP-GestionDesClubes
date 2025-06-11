@@ -77,7 +77,7 @@ export default function FeatursSection() {
               <span className="bottom flex flex-col translate-y-[-100%] gap-2 pl-10 pt-3 ">
                 <h2 className='font-extrabold  text-gray-700 text-2xl '>Explore clubs</h2>
                 <p className='text-sm text-gray-500'>Browse through a diverse range of clubs and find where you belong</p>
-                <Link className="link" >Explore Clubs &gt;</Link>
+                {/* <Link className="link" >Explore Clubs &gt;</Link> */}
               </span>
             </div> 
 
@@ -178,10 +178,9 @@ export default function FeatursSection() {
               <span className=" flex flex-col translate-y-[-130%] pl-10 pt-3 gap-2 ">
                 <h2 className='font-extrabold  text-gray-700 text-2xl '>Upcoming Events</h2>
                 <p className='text-sm text-gray-500'>Stay updated with the latest events and participate actively.</p>
-                <Link className="link" >Explore Clubs &gt;</Link>
+                <Link to="/events" className="link" >View Events &gt;</Link>
               </span>
             </div> 
-{/* third card ---------------------------------------------------------------------------------------------------- */}
 
 <div className=" card   ">
 
@@ -287,9 +286,9 @@ aspect-[2.6/2]
 
 </span>
 <span className=" flex flex-col translate-y-[-140%] pl-10 pt-3 gap-2 ">
-  <h2 className='font-extrabold  text-gray-700 text-2xl '>Upcoming Events</h2>
-  <p className='text-sm text-gray-500'>Stay updated with the latest events and participate actively.</p>
-  <Link className="link" >Explore Clubs &gt;</Link>
+  <h2 className='font-extrabold  text-gray-700 text-xl '>Upcoming Announcements</h2>
+  <p className='text-sm text-gray-500'>Stay updated with the latest Announcements and participate actively.</p>
+  <Link to="/announcements" className="link" >View Announcements &gt;</Link>
 </span>
 </div> 
 

@@ -1,13 +1,55 @@
-import React from "react";
-import { DownloadCloud } from "lucide-react";
+import React from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { DownloadCloud } from 'lucide-react';
+import { toast } from 'react-toastify';
 
-const initialData = [
-  { id: 1, club: "Club1", pdf: "https://example.com/file1.pdf", status: "Pending" },
-  { id: 2, club: "Club2", pdf: "https://example.com/file2.pdf", status: "Accepted" },
-  { id: 3, club: "Club3", pdf: "https://example.com/file3.pdf", status: "Rejected" },
-];
+export default function MaterialsReservations({ token }) {
+  const queryClient = useQueryClient();
 
-export default function MaterialsReservations() {
+  // 1) Fetch all material reservations
+  const { data: items = [], isLoading, isError, error } = useQuery({
+    queryKey: ['materials'],
+    queryFn: async () => {
+      const res = await axios.get('http://localhost:8000/api/materials', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      });
+      return res.data.data || [];
+    },
+    enabled: !!token,
+  });
+
+  // 2) Mutation to update status
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }) => {
+      return await axios.post(
+        `http://localhost:8000/api/materials/${id}/status`,
+        { status },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        }
+      );
+    },
+    onSuccess: () => {
+      toast.success('Status updated');
+      queryClient.invalidateQueries(['materials']);
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || err.message;
+      toast.error('Update failed: ' + msg);
+    },
+  });
+
+  if (isLoading) return <p className="p-4 text-gray-500">Loading…</p>;
+  if (isError)   return <p className="p-4 text-red-500">Error: {error.message}</p>;
+
   return (
     <section>
       <h1 className="mb-4 text-2xl font-semibold">Materials Reservations</h1>
@@ -23,24 +65,24 @@ export default function MaterialsReservations() {
               <th className="px-4 py-3 text-center">Action</th>
             </tr>
           </thead>
-
           <tbody>
-            {initialData.map((row, idx) => {
+            {items.map((row, idx) => {
               const isEven = idx % 2 === 0;
+              const key = row.status.toLowerCase();
               const badgeStyles = {
-                Pending: "bg-yellow-100 text-yellow-700",
-                Accepted: "bg-green-100 text-green-700",
-                Rejected: "bg-red-100 text-red-700",
-              }[row.status];
-              const isPending = row.status === "Pending";
+                pending:  'bg-yellow-100 text-yellow-700',
+                accepted: 'bg-green-100 text-green-700',
+                rejected: 'bg-red-100 text-red-700',
+              }[key] || 'bg-gray-100 text-gray-700';
+              const isPending = key === 'pending';
 
               return (
-                <tr key={row.id} className={`${isEven ? "bg-gray-50" : ""} text-center`}>
+                <tr key={row.id} className={`${isEven ? 'bg-gray-50' : ''} text-center`}>
                   <td className="px-4 py-3">{row.id}</td>
-                  <td className="px-4 py-3">{row.club}</td>
+                  <td className="px-4 py-3">{row.club_name}</td>
                   <td className="px-4 py-3">
                     <a
-                      href={row.pdf}
+                      href={row.pdf_demande}
                       download
                       className="inline-flex items-center rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700"
                     >
@@ -55,24 +97,26 @@ export default function MaterialsReservations() {
                       {row.status}
                     </span>
                   </td>
-                  <td className="flex gap-3 py-3 justify-center ">
+                  <td className="flex gap-3 py-3 justify-center">
                     <button
+                      onClick={() => updateStatus.mutate({ id: row.id, status: 'approved' })}
+                      disabled={!isPending}
                       className={`rounded px-3 py-1 text-xs font-medium w-20 ${
                         isPending
-                          ? "bg-green-500 text-white hover:bg-green-600 btn"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          ? 'bg-green-500 text-white hover:bg-green-600 btn'
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       }`}
-                      disabled={!isPending}
                     >
                       Accept
                     </button>
                     <button
+                      onClick={() => updateStatus.mutate({ id: row.id, status: 'rejected' })}
+                      disabled={!isPending}
                       className={`rounded px-3 py-1 text-xs font-medium w-20 ${
                         isPending
-                          ? "bg-red-500 text-white hover:bg-red-600 btn"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          ? 'bg-red-500 text-white hover:bg-red-600 btn'
+                          : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                       }`}
-                      disabled={!isPending}
                     >
                       Reject
                     </button>

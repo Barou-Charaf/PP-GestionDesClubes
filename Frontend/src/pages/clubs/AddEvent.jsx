@@ -1,214 +1,205 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { useParams } from 'react-router-dom';
 
-const imageSchema = yup.mixed().test(
-  'fileSize',
-  'File size is too large',
-  (value) => value === null || (value instanceof File && value.size <= 1024 * 1024) // 1MB limit
-);
-
-const schema = yup.object().shape({
+/* -------------------- Validation Schema -------------------- */
+const schema = yup.object({
   title: yup.string().required('Title is required'),
-  description: yup.string(),
-  images: yup
-    .array()
-    .max(4, 'Maximum 4 images are allowed')
-    .of(imageSchema),
+  description: yup.string().required('Description is required'),
+  // images removed from schema so submit will fire
 });
 
-const AddEventForm = ({event,setEvent}) => {
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+/* ---------------------- Component ---------------------- */
+const AddEvent = ({ clubId: propClubId, setEvent }) => {
+  const { id: paramId } = useParams();
+  const clubId = propClubId || Number(paramId);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: { title: '', description: '' },
   });
 
   const [previewImages, setPreviewImages] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleImageChange = (event) => {
-    const files = Array.from(event.target.files);
+  useEffect(() => () => previewImages.forEach(URL.revokeObjectURL), [previewImages]);
 
-    if (files.length > 4) {
-      // You might want to show a user-friendly error message here
-      console.error('Cannot upload more than 4 images.');
-      return;
+  const handleImageChange = e => {
+    const files = Array.from(e.target.files || []);
+    if (selectedFiles.length + files.length > 5) {
+      return alert('You can only upload up to 5 images');
     }
+    setSelectedFiles(sf => [...sf, ...files]);
+    setPreviewImages(pv => [...pv, ...files.map(f => URL.createObjectURL(f))]);
+  };
 
-    const newPreviewImages = [];
-    const newFiles = [];
+  const handleRemoveImage = idx => {
+    setSelectedFiles(sf => sf.filter((_, i) => i !== idx));
+    setPreviewImages(pv => pv.filter((_, i) => i !== idx));
+  };
 
-    for (let i = 0; i < Math.min(files.length, 4 - previewImages.length); i++) {
-      const file = files[i];
-      newFiles.push(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviewImages.push(reader.result);
-        if (newPreviewImages.length + previewImages.length === Math.min(files.length + previewImages.length, 4)) {
-          setPreviewImages((prev) => [...prev, ...newPreviewImages]);
+  const onSubmit = async ({ title, description }) => {
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('club_id', String(clubId));
+    formData.append('title', title);
+    formData.append('description', description);
+    selectedFiles.forEach(f => formData.append('image[]', f));
+
+    console.log('Submitting payload:');
+    for (let [k, v] of formData.entries()) console.log(k, v);
+
+    try {
+      const token = Cookies.get('auth_token');
+      const { data } = await axios.post(
+        'http://localhost:8000/api/activities',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            // no explicit Content-Type
+          },
         }
-      };
-      reader.readAsDataURL(file);
+      );
+      console.log('Created:', data);
+      setEvent(false);
+    } catch (err) {
+      console.error('Error:', err.response?.data || err.message);
+      alert('Failed to create event. Check console.');
+    } finally {
+      setLoading(false);
     }
-
-    setValue('images', [...previewImages.map(p => new File([], '')), ...newFiles]); // Update form state with File objects (empty files for existing previews)
-  };
-
-  const handleRemoveImage = (index) => {
-    const newPreviewImages = [...previewImages];
-    newPreviewImages.splice(index, 1);
-    setPreviewImages(newPreviewImages);
-
-    const currentImages = Array.isArray(errors.images?.root) ? [...errors.images.root] : [];
-    const updatedImages = currentImages.filter((_, i) => i !== index);
-    setValue('images', updatedImages);
-  };
-
-  const onSubmit = (data) => {
-    console.log('Form data:', { ...data, images: previewImages });
-    setEvent(false)
-    // Handle your form submission logic here
   };
 
   return (
-   <div
-   className='w-full h-[450%] bg-[#0000008a] absolute z-100 top-0 left-0 right-0 pt-40'
-   > 
-    <div style={{ backgroundColor: '#f8f9fa', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}
-    className=' w-[80%] m-auto bg-gradient-to-b from-[#e6f0ff] to-white p-15 '
-    >
-      <h2 className='text-2xl font-extrabold text-gray-800 '>Add Event</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="title" style={{ display: 'block', marginBottom: '5px', color: '#495057' }} className='mt-6 pl-1'>Title</label>
-          <input
-            type="text"
-            id="title"
-            {...register('title')}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', boxSizing: 'border-box' }}
-            className='bg-white'
-          />
-          {errors.title && <p style={{ color: 'red', fontSize: '0.8em', marginTop: '5px' }}>{errors.title.message}</p>}
-        </div>
+    <div className="w-full h-[450%] bg-[#0000008a] absolute inset-0 pt-40 z-100">
+      <div
+        className="w-[80%] m-auto p-15 bg-gradient-to-b from-[#e6f0ff] to-white"
+        style={{ borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,.1)' }}
+      >
+        <h2 className="text-2xl font-extrabold text-gray-800">Add Event</h2>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label htmlFor="description" style={{ display: 'block', marginBottom: '5px', color: '#495057' }} className='mt-8 pl-1'>Description</label>
-          <textarea
-            id="description"
-            {...register('description')}
-            style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', boxSizing: 'border-box', minHeight: '80px' }}  className='bg-white'
-          />
-          {errors.description && <p style={{ color: 'red', fontSize: '0.8em', marginTop: '5px' }}>{errors.description.message}</p>}
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', color: '#495057' }} className='text-[.7rem] text-gray-200 w-fit m-auto'>Add Images (Max 4)</label>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <label
-              htmlFor="image-upload"
-             className='btn bg-white mt-8 text-gray-700 rounded-full'
-            >
-              Add Image
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Title */}
+          <div className="mt-6">
+            <label htmlFor="title" className="block mb-1 pl-1 text-gray-700">
+              Title
             </label>
             <input
-              type="file"
-              id="image-upload"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              style={{ display: 'none' ,background:"white"}}
+              id="title"
+              {...register('title')}
+              className="w-full p-2 border border-gray-300 rounded bg-white"
             />
+            {errors.title && (
+              <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>
+            )}
           </div>
-          {errors.images && <p style={{ color: 'red', fontSize: '0.8em', marginTop: '5px' }}>{errors.images.message}</p>}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginTop: '15px' }}>
-            {previewImages.map((preview, index) => (
-              <div
-                key={index}
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '200px',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
+          {/* Description */}
+          <div className="mt-8">
+            <label htmlFor="description" className="block mb-1 pl-1 text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              {...register('description')}
+              className="w-full p-2 border border-gray-300 rounded bg-white min-h-[80px]"
+            />
+            {errors.description && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+
+          {/* Image Upload */}
+          <div className="mt-8">
+            <label className="block mb-1 text-[.7rem] text-center text-gray-600">
+              Add Images (max 5)
+            </label>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="image-upload"
+                className="btn bg-white mt-2 text-gray-700 rounded-full cursor-pointer"
               >
-                <img
-                  src={preview}
-                  alt={`preview-${index}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  style={{
-                    position: 'absolute',
-                    top: '5px',
-                    right: '5px',
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '20px',
-                    height: '20px',
-                    fontSize: '0.8em',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                  }}
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
-            {Array(4 - previewImages.length)
-              .fill(null)
-              .map((_, index) => (
-                <div
-                  key={`empty-${index}`}
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    border: '1px dashed #ccc',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: '#777',
-                    fontSize:  '0.9em',
+                Add Image
+              </label>
+              <input
+                id="image-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+              />
+            </div>
 
-                  }}
-                  className='bg-gray-300'
+            <div
+              className="grid gap-2 mt-4"
+              style={{ gridTemplateColumns: 'repeat(3,1fr)' }}
+            >
+              {previewImages.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative w-full h-[200px] border border-gray-300 rounded overflow-hidden"
                 >
-                  {previewImages.length + index + 1 > 0 && previewImages.length + index + 1 <= 4 && '+'}
+                  <img
+                    src={src}
+                    alt={`preview-${i}`}
+                    className="object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(i)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white text-xs rounded-full flex items-center justify-center"
+                  >
+                    &times;
+                  </button>
                 </div>
               ))}
+              {Array.from({ length: 5 - previewImages.length }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-full h-[200px] border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 bg-gray-100"
+                >
+                  +
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={()=>{setEvent(false)}}
-          className='btn rounded-full bg-white text-gray-800 cursor-pointer border'
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className='btn rounded-full bg-gray-600 cursor-pointer text-white border'
-          >
-            Save
-          </button>
-        </div>
-      </form>
-    </div>
+          {/* Buttons */}
+          <div className="flex justify-end gap-2 mt-8">
+            <button
+              type="button"
+              onClick={() => setEvent(false)}
+              className="btn rounded-full bg-white text-gray-800 border"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn rounded-full bg-gray-600 text-white border disabled:opacity-70"
+            >
+              {loading ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default AddEventForm;
+export default AddEvent;

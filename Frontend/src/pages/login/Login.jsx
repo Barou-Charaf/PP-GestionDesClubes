@@ -1,25 +1,53 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
+import axios from 'axios'
 import * as yup from "yup"
 import { useForm } from 'react-hook-form'
 import {yupResolver} from "@hookform/resolvers/yup"
 import loginImage from "../../assets/Login.png"
 import { Link } from 'react-router-dom'
+import { Contex  } from '../../App'
+
+import Cookies from 'js-cookie'; 
+
+import { useNavigate } from 'react-router-dom'
 
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  const {role,setRole}=useContext(Contex)
+  const [postResponse,setPostResponse]=useState(null);
 
   const shema = yup.object().shape({
      email:yup.string().email("must be an Email..").required("This field is required"),
-     password:yup.string().min(4,"Invalid password").max(10,"too much caracters for a Password").required("This field is required")
+     password:yup.string().min(4,"Invalid password").max(30,"too much caracters for a Password").required("This field is required")
   });
 
   const {handleSubmit,register,formState:{errors}}=useForm({
     resolver:yupResolver(shema)
   });
 
-const onSubmit=(data)=>{
- alert(data)
-}
+const onSubmit = (data) => {
+  axios.post('http://127.0.0.1:8000/api/login', data)
+    .then(response => {
+      const { token, user } = response.data;
+
+      // Save token to cookies
+      Cookies.set('auth_token', token, { expires: 7 }); // expires in 7 days
+
+      //  Redirect based on role
+      setRole(user.role);
+      
+      if (user.role === "super_admin") {
+        navigate("/admin");
+      } else if (user.role=== "admin_club") {
+        navigate(`/clubs/${user.club_id}`); // or wherever non-admins go
+      }
+    })
+    .catch(error => {
+      console.error('Login failed:', error);
+    });
+};
 
   return (
     <main

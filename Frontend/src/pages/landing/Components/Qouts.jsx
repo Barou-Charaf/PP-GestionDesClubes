@@ -21,25 +21,21 @@ export default function Qouts() {
     max-sm:w-full
     min-h-50 max-h-70 shadow-xl w-[54%] py-8 px-5 text-center bg-white rounded-xl left-1/2 relative -translate-x-1/2 flex justify-center items-center">
       <p className="text-gray-400 text-[12px] tracking-wider text-center">
-        “This is the quote one”
+        "The brightest horizons for our school's endeavors are shaped not by what we face, but by the fire we ignite within ourselves to participate."
       </p>
     </div>,
     <div className="
     max-sm:w-full
-    min-h-50 max-h-70 shadow-xl w-[54%] py-8 px-5 text-center bg-white rounded-xl left-1/2 relative -translate-x-1/2 flex justify-center items-center" flex justify-center items-center>
+    min-h-50 max-h-70 shadow-xl w-[54%] py-8 px-5 text-center bg-white rounded-xl left-1/2 relative -translate-x-1/2 flex justify-center items-center" >
       <p className="text-gray-400 text-[12px] tracking-wider text-center">
-        “This is the quote two”
+       Stepping into a new club means stepping beyond your comfort zone—into opportunities, challenges, and growth.
       </p>
     </div>,
     <div className="min-h-50 max-h-70 shadow-xl w-[54%] py-8 px-5 text-center bg-white rounded-xl left-1/2 relative -translate-x-1/2 flex justify-center items-center
     max-sm:w-full
     ">
       <p className="text-gray-400 text-[12px] tracking-wider text-center">
-        “This is the quote three”
-        “This is the quote three”
-        “This is the quote three”
-        “This is the quote three”
-        “This is the quote three”
+       "The only limit to our realization of tomorrow is our doubts of today." <br />- Franklin D. Roosevelt .
 
       </p>
     </div>,

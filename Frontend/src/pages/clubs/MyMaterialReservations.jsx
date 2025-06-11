@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
-const mockReservations = [
-  { id: 1, reason: '/downloads/reason1.pdf', date: '01/01/2025', type: 'upcoming' },
-  { id: 2, reason: '/downloads/reason2.pdf', date: '02/01/2025', type: 'upcoming' },
-  { id: 3, reason: '/downloads/reason3.pdf', date: '03/01/2024', type: 'past', status: 'Rejected' },
-  { id: 4, reason: '/downloads/reason4.pdf', date: '04/01/2024', type: 'past', status: 'Confirmed' },
-];
-
 const StatusBadge = ({ status }) => {
   const colorMap = {
-    Rejected: 'bg-red-500',
-    Confirmed: 'bg-green-500',
-    Finished: 'bg-gray-500'
+    rejected: 'bg-red-400',
+    approved: 'bg-green-400',
+    finished:  'bg-gray-500',
+    pending:   'bg-yellow-400',
   };
+  const key = (status || '').toLowerCase();
   return (
-    <span className={`rounded-full text-white text-sm font-semibold py-1 px-4 ${colorMap[status] || 'bg-gray-400'}`}>
-      {status || 'Unknown'}
-    </span>
+    <div className={`rounded-full text-white text-sm font-semibold py-[.3rem] w-30 text-center ${colorMap[key] || 'bg-gray-400'}`}>
+      {status}
+    </div>
   );
 };
 
@@ -31,7 +30,7 @@ const TableWrapper = ({ children }) => (
 
 const ReservationTable = ({ cancelReservation, data, isPast }) => (
   <TableWrapper>
-    <table className="w-full border-collapse h-60 text-base ">
+    <table className="w-full border-collapse  text-base">
       <thead>
         <tr className="bg-black text-white text-sm text-left">
           <th className="p-3">ID</th>
@@ -42,25 +41,21 @@ const ReservationTable = ({ cancelReservation, data, isPast }) => (
       </thead>
       <tbody>
         {data.map((res) => (
-          <tr key={res.id} className="border-t border-gray-300  text-gray-700">
-            <td className="p-3 text-sm ">{res.id}</td>
+          <tr key={res.id} className="border-t border-gray-300 text-gray-700">
+            <td className="p-3 text-sm">{res.id}</td>
             <td className="p-3 text-sm">
-              <a
-                href={res.reason}
-                download
-                className="btn  text-white px-4 w-40  py-2 text-sm"
-              >
+              <a href={res.reason} download className="btn text-white px-4 w-40 py-2 text-sm">
                 Download
               </a>
             </td>
             <td className="p-3 text-sm">{res.date}</td>
-            <td className="p-3 text-sm">
+            <td className="p-2 text-sm">
               {isPast ? (
                 <StatusBadge status={res.status} />
               ) : (
                 <button
-                  onClick={cancelReservation}
-                  className="btn bg-gray-500 text-white px-5 py-2   text-sm"
+                  onClick={() => cancelReservation(res.id)}
+                  className="btn bg-gray-500 text-white px-8 py-2 text-sm"
                 >
                   Cancel
                 </button>
@@ -73,56 +68,111 @@ const ReservationTable = ({ cancelReservation, data, isPast }) => (
   </TableWrapper>
 );
 
-const Pagination = ({ currentPage, totalPages, setCurrentPage }) => (
+const Pagination = ({ currentPage, totalPages, onPrev, onNext }) => (
   <div className="flex justify-center items-center mt-6 gap-2 text-lg">
-    <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} className="p-2 rounded-full btn size-10 bg-black text-white">
+    <button
+      onClick={onPrev}
+      disabled={currentPage <= 1}
+      className="p-2 rounded-full btn bg-black text-white disabled:opacity-50"
+    >
       <FontAwesomeIcon icon={faChevronLeft} />
     </button>
     <span className="px-4 py-2 border border-gray-300 w-20 text-center rounded-md bg-white font-medium">
       {currentPage}
     </span>
-    <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} className="p-2 rounded-full btn size-10 bg-black text-white">
+    <button
+      onClick={onNext}
+      disabled={currentPage >= totalPages}
+      className="p-2 rounded-full btn bg-black text-white disabled:opacity-50"
+    >
       <FontAwesomeIcon icon={faChevronRight} />
     </button>
     <span className="ml-2 text-sm text-gray-600">of {totalPages} pages</span>
   </div>
 );
 
-const MyReservations = ({ setSeeReservations }) => {
+export default function MyMaterialReservations({
+  setSeeReservations,
+  reservations = [],
+  token
+}) {
   const [currentTab, setCurrentTab] = useState('upcoming');
   const [currentPage, setCurrentPage] = useState(1);
+  const qc = useQueryClient();
 
-  const reservations = mockReservations.filter(r => r.type === currentTab);
-  const perPage = 5;
-  const totalPages = Math.ceil(reservations.length / perPage);
-  const current = reservations.slice((currentPage - 1) * perPage, currentPage * perPage);
+  // DELETE mutation with toast notifications
+  const deleteMutation = useMutation({
+    mutationFn: (id) =>
+      axios.delete(`http://localhost:8000/api/materials/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    onSuccess: () => {
+      toast.success('Material reservation deleted successfully');
+      qc.invalidateQueries(['materials']);
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || err.message;
+      toast.error('Delete failed: ' + msg);
+    },
+  });
 
-  const cancelReservation = () => {
-    console.log("canceling...");
+  const cancelReservation = (id) => {
+    deleteMutation.mutate(id);
   };
 
+  // Filter upcoming vs past
+  const filtered = reservations.filter((r) =>
+    currentTab === 'upcoming' ? r.status === 'pending' : r.status !== 'pending'
+  );
+
+  // Pagination logic
+  const perPage = 5;
+  const totalPages = Math.ceil(filtered.length / perPage) || 1;
+  const current = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  // Handlers for Prev/Next
+  const goPrev = () => setCurrentPage(p => Math.max(p - 1, 1));
+  const goNext = () => setCurrentPage(p => Math.min(p + 1, totalPages));
+
   return (
-    <div className="p-8 bg-[#eaf2ff] min-h-screen text-lg absolute z-100 top-0 right-0 left-0">
-      <div className="mb-6">
-        <button onClick={() => setSeeReservations(false)} className="btn p-0 size-8 rounded-full bg-white border border-gray-300">
+    <div className="p-8 bg-[#eaf2ff] min-h-screen text-lg absolute top-0 right-0 left-0">
+      <div className="mb-6 flex items-center justify-between">
+        <button
+          onClick={() => setSeeReservations(false)}
+          className="btn bg-white border rounded-full p-2"
+        >
           <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 text-gray-700" />
         </button>
         <h1 className="text-3xl font-bold text-gray-700">My Reservations</h1>
-        <div className="flex gap-8 mt-4 border-b border-gray-200">
-          <button onClick={() => { setCurrentTab('upcoming'); setCurrentPage(1); }}
-            className={`pb-3 ${currentTab === 'upcoming' ? 'border-b-2 border-gray-600 font-semibold text-gray-700' : 'text-gray-500'}`}>
-            Upcoming
-          </button>
-          <button onClick={() => { setCurrentTab('past'); setCurrentPage(1); }}
-            className={`pb-3 ${currentTab === 'past' ? 'border-b-2 border-gray-600 font-semibold text-gray-700' : 'text-gray-500'}`}>
-            Past
-          </button>
-        </div>
       </div>
-      <ReservationTable cancelReservation={cancelReservation} data={current} isPast={currentTab === 'past'} />
-      <Pagination currentPage={currentPage} totalPages={totalPages} setCurrentPage={setCurrentPage} />
+
+      <div className="flex gap-8 border-b border-gray-200 mb-6">
+        <button
+          onClick={() => { setCurrentTab('upcoming'); setCurrentPage(1); }}
+          className={currentTab==='upcoming' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
+        >
+          Upcoming
+        </button>
+        <button
+          onClick={() => { setCurrentTab('past'); setCurrentPage(1); }}
+          className={currentTab==='past' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
+        >
+          Past
+        </button>
+      </div>
+
+      <ReservationTable
+        cancelReservation={cancelReservation}
+        data={current}
+        isPast={currentTab === 'past'}
+      />
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </div>
   );
-};
-
-export default MyReservations;
+}

@@ -38,7 +38,16 @@ export default function ThirdSection() {
                     >
                     <img src={Tsone} alt=""  className='w-full h-full rounded-3xl object-cover'/>
                     </span>    
-                    <div className='flex flex-col w-[60%] gap-5 p-10'>
+                    <div className='flex flex-col w-[60%] gap-5 p-10 relative '>
+                      <span
+                      className='absolute top-0 right-0 w-full h-full bg-white opacity-10 rounded-3xl z-10'
+                      ></span>
+                       <span
+                       className='absolute top-10 -left-40 w-40 h-40 border-2 border-yellow-400 rounded-full z-10'
+                       ></span>
+                        <span
+                       className='absolute top-60 -left-80 w-20 h-20 border-2 border-yellow-400 rounded-full z-10'
+                       ></span>
                         <h2
                         className='text-3xl font-bold text-left leading-12'
                         >
@@ -54,7 +63,8 @@ export default function ThirdSection() {
 
             <div className='flex w-full   justify-evenly h-fit '>
                       
-                    <div className='flex flex-col w-[62%] h-100 pl-15 pr-5  py-0 '>
+                    <div className='flex flex-col w-[62%] h-100 pl-15 pr-5  py-0  '>
+                      
                         <h2
                         className='text-3xl mb-5 font-bold text-left leading-12'
                         >
@@ -72,12 +82,19 @@ export default function ThirdSection() {
 <br />-&gt;Honor Societies: Academic excellence groups like Phi Beta Kappa.
 Joining these clubs provides platforms to explore passions, build lasting friendships, and contribute positively to the community, ultimately enhancing personal and professional development.
                         </p>
+                    
                     </div>
 
                     <span 
-                    className='aspect-[2/3]  w-[40%] h-[20%] rounded-3xl object-cover translate-y-[25%] z-30'
+                    className='aspect-[2/3] relative  w-[40%] h-[20%] rounded-3xl object-cover translate-y-[25%] z-30'
                     >
                     <img src={Tstwo} alt=""  className='w-full  object-cover bg-center  rounded-3xl z-30  sh'/>
+                      <span
+                       className='absolute -top-30  -right-20 w-40 h-40 border-2 border-yellow-400 rounded-full z-10'
+                       ></span>
+                        <span
+                       className='absolute top-80 -left-18 w-20 h-20 border-2 border-yellow-400 rounded-full z-10'
+                       ></span>
                     </span> 
             </div>
 

@@ -2,11 +2,14 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { X } from "lucide-react"; // Optional for cancel icon
+import { X } from "lucide-react";
+import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from 'react-toastify';
 
 // Yup schema for validation
 const schema = yup.object().shape({
-  clubName: yup.string().required("Club name is required"),
+  name: yup.string().required("Club name is required"),
   description: yup.string().required("Description is required"),
   phone: yup.string(),
   facebook: yup.string().url("Must be a valid URL"),
@@ -15,9 +18,9 @@ const schema = yup.object().shape({
   email: yup.string().email("Invalid email"),
 });
 
+const AddClub = ({ club, setClub, token }) => {
+  const queryClient = useQueryClient();
 
-
-const AddClub = ({club,setClub}) => {
   const {
     register,
     handleSubmit,
@@ -28,36 +31,52 @@ const AddClub = ({club,setClub}) => {
   });
 
   const onSubmit = (data) => {
-    console.log("Form Data:", data);
-    reset(); // Clear form after submit
-    setClub(false)
+    data.logo = "";
+    axios
+      .post(
+        "http://localhost:8000/api/clubs",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        toast.success("Club added successfully");
+        queryClient.invalidateQueries(["clubsInAdmin"]);
+        setClub(false);
+        reset();
+      })
+      .catch((err) => {
+        console.error("Error adding club:", err);
+        const msg = err.response?.data?.message || err.message;
+        toast.error(`Failed to add club: ${msg}`);
+      });
   };
 
   return (
     <div className="p-6 max-w-3xl mx-auto rounded-xl shadow-md bg-gradient-to-b from-blue-100 to-white absolute top-10 ">
-        <span 
-        className="absolute top-5 left-5 size-10 btn p-0 rounded-full  "
-        onClick={()=>{
-            setClub(false);
-        }}
-        >
+      <span
+        className="absolute top-5 left-5 size-10 btn p-0 rounded-full"
+        onClick={() => setClub(false)}
+      >
         <X className="h-4 w-4" />
-        </span>
-        <h2
-        className="text-2xl m-auto w-fit my-5 font-semibold text-gray-600"
-        >
-            Add Club
-        </h2>
-    
+      </span>
+      <h2 className="text-2xl m-auto w-fit my-5 font-semibold text-gray-600">
+        Add Club
+      </h2>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Club name</label>
           <input
             type="text"
-            {...register("clubName")}
+            {...register("name")}
             className="w-full p-2 border border-gray-300 rounded"
           />
-          {errors.clubName && <p className="text-red-500 text-sm">{errors.clubName.message}</p>}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
         </div>
 
         <div>
@@ -100,7 +119,7 @@ const AddClub = ({club,setClub}) => {
         <div className="flex justify-end gap-4 pt-4">
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => { reset(); setClub(false); }}
             className="flex items-center text-gray-700 border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
           >
             Cancel

@@ -6,9 +6,11 @@ import mechatronic from "../../../assets/mechatronic.jpeg";
 import Rotaract from "../../../assets/Rotaract.jpeg";
 import Rotaract2 from "../../../assets/Rotaract2.jpeg";
 import Rotaract3 from "../../../assets/Rotaract3.jpeg";
+import { useNavigate } from "react-router-dom";
 
 
 export default function HeroSection() {
+  const navigte = useNavigate();
   return (
     <section className="sm:w-full  flex justify-between items-center 
     mt-10 pl-20 
@@ -22,8 +24,12 @@ export default function HeroSection() {
         At ENSET, learning is a journey of discovery, where minds meet to spark change.
         </p>
         <span className="flex gap-5 items-center">
-          <button className="btn rounded-full">Shape Your Future</button>
-          <Link className="link
+          <button 
+          onClick={()=>{
+            navigte("/login");
+          }}
+          className="btn rounded-full">Shape Your Future</button>
+          <Link to="/events" className="link
           ">Find Your Path <span
           className="text-[.6rem] font-extrabold"
           >&gt;</span> </Link>
