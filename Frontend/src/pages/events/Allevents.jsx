@@ -12,8 +12,12 @@ import {
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 
+import {Contex} from "../../App"
+import { useContext } from 'react';
+
 export default function Allevents() {
  const navigate = useNavigate();
+ const {login}=useContext(Contex);
 
  const {
   data: events,
@@ -42,7 +46,7 @@ export default function Allevents() {
  return (
   <>
    <section className="px-5 py-2 pt-5 bg-gray-100">
-    <Header />
+    <Header login={login} />
    </section>
 
    <main

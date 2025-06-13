@@ -6,8 +6,12 @@ import DisplayEventAnnounce from "../events/components/DisplayEventAnnounce";
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
+import {Contex} from "../../App"
+import { useContext } from 'react';
+
 export default function AllAnnouncements({ clubId }) {
   const navigate = useNavigate();
+  const {login} = useContext(Contex);
 
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ['all-announcements'],
@@ -35,7 +39,7 @@ export default function AllAnnouncements({ clubId }) {
   return (
     <>
       <section className='px-5 py-2 pt-5 bg-gray-100'>
-        <Header />
+        <Header login={login} />
       </section>
 
       <main

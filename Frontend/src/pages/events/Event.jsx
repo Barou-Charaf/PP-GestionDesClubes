@@ -6,9 +6,12 @@ import axios from 'axios';
 import Header from '../landing/Components/Header';
 import BigFooter from "../BigFooter";
 
-export default function Event() {
-  const { id : eventId } = useParams(); // Get the eventId from the URL
+import {Contex} from "../../App"
+import { useContext } from 'react';
 
+export default function Event() {
+  const { id : eventId } = useParams();// Get the eventId from the URL
+  const {login}=useContext(Contex);
   console.log("Current eventId from URL:", eventId); // Debugging: Check if eventId is correct
 
   const {
@@ -60,7 +63,7 @@ export default function Event() {
   return (
     <main>
       <section className='px-5 py-2 pt-5 bg-gray-100'>
-        <Header />
+        <Header login={login} />
       </section>
 
       <section

@@ -80,6 +80,7 @@ export default function ClubProfile() {
       if (res.data?.logo && !res.data.logo.startsWith('http')) {
         res.data.logo = `http://localhost:8000${res.data.logo.startsWith('/') ? '' : '/'}${res.data.logo}`;
       }
+      console.log("clubdata",res.data);
       return res.data;
     },
   });
@@ -198,10 +199,18 @@ export default function ClubProfile() {
 
           {/* ─── right column ─── */}
           <section className="w-[75%]">
-            <div className="border-b border-gray-300 pb-5">
+           <div className='border-b border-gray-300 flex justify-between  h-fit '>
+            <div className=" pb-5">
               <h2 className="text-3xl font-bold text-gray-700">Hello TO [{club.name}]</h2>
               <p className="text-gray-800 text-[1.3rem] underline mt-2">Reviewed By You</p>
             </div>
+            { club.active ? <span
+            className="bg-green-500 text-white rounded-full px-3 py-1 text-sm font-semibold h-fit w-30 text-center translate-y-5  cursor-not-allowed"
+            >Active</span>: <span
+            className="bg-red-500 text-white rounded-full px-3 py-1 text-sm font-semibold h-fit w-30 text-center translate-y-5  cursor-not-allowed"
+            >Inactive</span>
+            }
+            </div> 
 
             {/* menu visible only for own-club admins */}
             {isOwnClub && (

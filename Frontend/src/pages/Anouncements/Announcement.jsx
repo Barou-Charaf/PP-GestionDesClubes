@@ -7,8 +7,12 @@ import BigFooter from '../BigFooter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
+import {Contex} from "../../App"
+import { useContext } from 'react';
+
 export default function Announcement() {
   const { id } = useParams();
+  const {login} = useContext(Contex);
 
   const {
     data: event,
@@ -61,7 +65,7 @@ export default function Announcement() {
   return (
     <main>
       <section className="px-5 py-2 pt-5 bg-gray-100">
-        <Header />
+        <Header login={login} />
       </section>
 
       <section className="bg-gradient-to-b from-[#0095ff32] to-white min-h-[70vh] pt-30 px-10 relative mb-30">
