@@ -2,6 +2,8 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 import Header from '../landing/Components/Header';
 import BigFooter from '../BigFooter';
@@ -60,10 +62,12 @@ export default function AllAnnouncements({ clubId }) {
           />
         </div>
 
-        <div className="w-full h-fit pt-30 px-6 justify-center z-50 relative mb-10">
+        <div className="w-full h-fit flex flex-wrap pt-30 px-6 gap-10 z-50 relative mb-10">
           {isLoading ? (
-            <p className="text-center text-gray-500 py-10">Loading...</p>
-          ) : isError ? (
+                     <div className="flex justify-center w-full text-center text-green-400 items-center py-10 mt-50">
+                       <FontAwesomeIcon icon={faSpinner} spin size="2x" />
+                     </div>
+                   ) : isError ? (
             <p className="text-center text-red-500 py-10">Error: {error.message}</p>
           ) : data.length !== 0 ? (
             data.map((ele, index) => (
@@ -74,11 +78,13 @@ export default function AllAnnouncements({ clubId }) {
               />
             ))
           ) : (
-            <p className="text-center text-gray-500 py-10">Nothing found.</p>
+            <p className="text-center w-fu text-gray-500 py-10">Nothing found.</p>
           )}
         </div>
 
+        <div className='w-full h-fit pt-38'>
         <BigFooter />
+        </div>
       </main>
     </>
   );

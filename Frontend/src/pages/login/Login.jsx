@@ -7,7 +7,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import loginImage from "../../assets/Login.png";
 import { Link, useNavigate } from 'react-router-dom';
 import { Contex } from '../../App';
-import Cookies from 'js-cookie'; 
+import Cookies from 'js-cookie';
+
+// Toastify imports
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,11 +20,11 @@ export default function Login() {
 
   /* ------------- validation ------------- */
   const shema = yup.object().shape({
-    email:    yup.string().email("must be an Email..").required("This field is required"),
-    password: yup.string().min(4,"Invalid password").max(30,"too much caracters for a Password").required("This field is required")
+    email: yup.string().email("must be an Email..").required("This field is required"),
+    password: yup.string().min(4, "Invalid password").max(30, "too much caracters for a Password").required("This field is required")
   });
 
-  const { handleSubmit, register, formState:{ errors } } = useForm({
+  const { handleSubmit, register, formState: { errors } } = useForm({
     resolver: yupResolver(shema)
   });
   /* -------------------------------------- */
@@ -30,28 +34,31 @@ export default function Login() {
       .then(response => {
         const { token, user } = response.data;
 
-        /* ----- persist auth ----- */
+        // Save tokens and login status
         Cookies.set('auth_token', token, { expires: 7 });
         localStorage.setItem('auth_token', token);
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('role', user.role || '');
         if (user.club_id) localStorage.setItem('club_id', user.club_id);
-        /* ------------------------ */
 
         setRole(user.role);
         setLogin(true);
 
-        /* ---- redirect by role ---- */
-        if (user.role === "super_admin") {
-          navigate("/admin");
-        } else if (user.role === "admin_club") {
-          navigate(`/clubs/${user.club_id}`);
-        } else {
-          navigate("/");
-        }
+        toast.success("Login successful!");
+
+        setTimeout(() => {
+          if (user.role === "super_admin") {
+            navigate("/admin");
+          } else if (user.role === "admin_club") {
+            navigate(`/clubs/${user.club_id}`);
+          } else {
+            navigate("/");
+          }
+        }, 1500);
       })
       .catch(error => {
         console.error('Login failed:', error);
+        toast.error("Login failed! Please check your credentials.");
       });
   };
 
@@ -59,18 +66,16 @@ export default function Login() {
     <main
       className='w-screen md:px-10 md:py-10 md:bg-gradient-to-r md:from-[#1c1d21] md:from-50% md:to-50% md:to-purple-600 text-gray-300 flex flex-col md:flex-row-reverse '
     >
+      <ToastContainer />
+
       {/* ---------- WELCOME / IMAGE SIDE ---------- */}
       <section
         className=' relative bg-purple-600 md:bg-transparent md:w-1/2 w-full flex flex-col md:h-[100vh]  justify-evenly items-center  md:shadow-2xl md:rounded-r-4xl md:p-0 py-10 px-2'
       >
         <span className='z-20'>
-          <h1
-            className='potato-container before:top-0 before:left-0 before:size:40 after:top-0 after:right-0 text-6xl font-bold'
-          >
+          <h1 className='potato-container before:top-0 before:left-0 before:size:40 after:top-0 after:right-0 text-6xl font-bold'>
             Welcom to <br />
-            <span
-              className='potato-container after:top-40 after:right-20 before:top-20 before:left-50 font-normal'
-            >
+            <span className='potato-container after:top-40 after:right-20 before:top-20 before:left-50 font-normal'>
               Enset's Clubs
             </span>
           </h1>
@@ -79,9 +84,7 @@ export default function Login() {
           </p>
         </span>
 
-        <div
-          className='potato-container after:bottom-0 after:right-30 before:bottom-20 before:left-10 w-[70%] z-20'
-        >
+        <div className='potato-container after:bottom-0 after:right-30 before:bottom-20 before:left-10 w-[70%] z-20'>
           <img src={loginImage} alt="" className='w-full h-full object-cover' />
         </div>
       </section>
@@ -128,7 +131,6 @@ export default function Login() {
               </label>
             }
 
-            {/* <p className='text-[.7rem] w-[90%]'>Forget password?</p> */}
             <button
               className='btn w-[92%] my-3 mx-auto bg-purple-600 py-2'
             >
@@ -136,27 +138,7 @@ export default function Login() {
             </button>
           </span>
         </form>
-
-        {/* <div className='w-full md:w-[65%] text-[.7rem] flex font-light sm:flex-row gap-5 flex-col justify-between items-center'> */}
-          {/* <p>Don't have an account?</p> */}
-          {/* <button
-            className='btn w-full md:w-fit text-[.7rem] bg-gray-700 active:opacity-70 py-[.4rem] opacity-50'
-          >
-            Sign up
-          </button>
-        </div> */}
       </section>
-
-      {/* Optional “Back” button (comment kept exactly as you had it) */}
-      {/* 
-      <Link to="/">
-        <span
-          className='btn rounded-full size-12 bg-purple-500 shadow-2xl shadow-gray-500 text-[.6rem] absolute top-20 left-20 p-0 animate-bounce'
-        >
-          Back
-        </span>
-      </Link> 
-      */}
     </main>
   );
 }

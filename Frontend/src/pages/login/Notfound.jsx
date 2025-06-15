@@ -1,20 +1,26 @@
-import React from 'react'
+import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default function Notfound() {
+export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-center p-6">
-      <h1 className="text-6xl font-bold text-red-500 mb-4">404</h1>
-      <h2 className="text-2xl font-semibold text-gray-800 mb-2">Oops! Page Not Found</h2>
-      <p className="text-gray-600 mb-6">
-        It looks like the club you're looking for doesn't exist, or the page has been moved.
-      </p>
-      <Link
-        to="/"
-       className='btn'
->
-        Back to Clubs Home
-      </Link>
+    <>
+       <div className='flex justify-end pt-10 pr-10 items-self-start  '>
+      <Link to="/" className="mt-4 btn w-fit rounded-full  bg-black  ">
+           GO Back Home
+          </Link>
+
     </div>
+    
+    <div className="flex flex-col items-center justify-center min-h-[500px] bg-white text-gray-800">
+   
+      <div className="flex items-center space-x-4">
+        <p className="text-3xl font-semibold border-r pr-4 border-gray-400">404</p>
+        <div className="flex flex-col">
+          <p className="text-xl">This page could not be found.</p>
+         
+        </div>
+      </div>
+    </div>
+    </>
   );
 }

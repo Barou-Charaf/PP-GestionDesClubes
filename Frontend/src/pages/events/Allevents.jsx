@@ -57,16 +57,16 @@ export default function Allevents() {
           />
         </div>
 
-        <div className="w-full h-fit px-6 justify-center z-20 relative pt-30 pb-20">
+        <div className="w-full h-fit flex px-6 gap-10 z-20 relative pt-30 pb-20">
           {isLoading && (
-            <div className="flex justify-center text-green-400 items-center py-10 mt-50">
+            <div className="flex justify-center w-full text-center text-green-400 items-center py-10 mt-50">
               <FontAwesomeIcon icon={faSpinner} spin size="2x" />
             </div>
           )}
 
           {isError && (
-            <p className="text-center text-red-500 py-10">
-              Error: {error.message}
+            <p className="text-center text-gray-400 py-10  w-full">
+              Nothing found.
             </p>
           )}
 
@@ -86,8 +86,9 @@ export default function Allevents() {
             </div>
           )}
         </div>
-
+       <div className='w-full h-fit pt-30'>
         <BigFooter />
+        </div>
       </main>
     </>
   );
