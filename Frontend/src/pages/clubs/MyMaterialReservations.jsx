@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight ,faDownload } from '@fortawesome/free-solid-svg-icons';
 
 const StatusBadge = ({ status }) => {
   const colorMap = {
@@ -43,11 +43,17 @@ const ReservationTable = ({ cancelReservation, data, isPast }) => (
         {data.map((res) => (
           <tr key={res.id} className="border-t border-gray-300 text-gray-700">
             <td className="p-3 text-sm">{res.id}</td>
-            <td className="p-3 text-sm">
-              <a href={res.reason} download className="btn text-white px-4 w-40 py-2 text-sm">
-                Download
-              </a>
-            </td>
+           <td className="px-6 py-4">
+               <a
+                                 href={res.reason}
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="btn size-10 p-0 rounded-full "
+                                 title="Open PDF in new tab"
+                >
+                                 <FontAwesomeIcon icon={faDownload} className="w-5 h-5 text-white" />
+                               </a>
+                             </td>
             <td className="p-3 text-sm">{res.date}</td>
             <td className="p-2 text-sm">
               {isPast ? (
@@ -55,7 +61,7 @@ const ReservationTable = ({ cancelReservation, data, isPast }) => (
               ) : (
                 <button
                   onClick={() => cancelReservation(res.id)}
-                  className="btn bg-gray-500 text-white px-8 py-2 text-sm"
+                  className="btn bg-red-500 text-white px-8 py-2 text-sm"
                 >
                   Cancel
                 </button>

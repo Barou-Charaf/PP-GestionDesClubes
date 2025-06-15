@@ -2,12 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-// For subtle pop-out notification
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,24 +13,23 @@ const schema = yup.object().shape({
   clubName: yup.string().required('Club name is required'),
   description: yup.string().required('Description is required'),
   phone: yup.string().matches(/^\+?[0-9\- ]+$/, 'Invalid phone number').required('Phone is required'),
-  facebook: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value), // Transform empty string to null
-  instagram: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value), // Transform empty string to null
-  linkedin: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value), // Use 'linkedin' to match your API screenshot
+  facebook: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value),
+  instagram: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value),
+  linkedin: yup.string().url('Must be a valid URL').nullable().transform(value => value === '' ? null : value),
   email: yup.string().email('Invalid email').required('Email is required'),
   photo: yup.mixed().nullable().test(
     "fileSize",
     "File too large (max 5MB)",
-    (value) => !value || (value instanceof File && value.size <= 5 * 1024 * 1024) // 5MB limit
+    (value) => !value || (value instanceof File && value.size <= 5 * 1024 * 1024)
   ).test(
     "fileType",
     "Unsupported file format (only JPEG, PNG, GIF)",
     (value) => !value || (value instanceof File && ['image/jpeg', 'image/png', 'image/gif'].includes(value.type))
   ),
-  verified: yup.boolean().required(), // Added validation for verified
+  verified: yup.boolean().required(),
 });
 
 const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
-  // Initialize preview with current club's logo, ensuring it's an absolute URL
   const [preview, setPreview] = useState(
     currentClubData?.logo && !currentClubData.logo.startsWith('http')
       ? `http://localhost:8000${currentClubData.logo.startsWith('/') ? '' : '/'}${currentClubData.logo}`
@@ -45,7 +41,7 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
   const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      clubName: '', // These will be populated by useEffect
+      clubName: '',
       description: '',
       phone: '',
       facebook: '',
@@ -59,36 +55,22 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
 
   const updateClubMutation = useMutation({
     mutationFn: async (formData) => {
-      // Ensure clubId and token are provided
       if (!clubId || !token) {
-        throw new Error("Club ID or Authorization token is missing. Please ensure you are logged in and selecting a club.");
+        throw new Error("Club ID or Authorization token is missing.");
       }
 
-      // Create FormData object
       const data = new FormData();
-      // Append form fields to FormData, mapping 'clubName' to 'name' and 'verified' to 'active'
-      // And using 'linkedin' as is
       data.append('name', formData.clubName);
       data.append('description', formData.description);
       data.append('phone', formData.phone);
       data.append('email', formData.email);
-      data.append('active', formData.verified ? 'true' : 'false'); // API expects 'true'/'false' strings
+      data.append('active', formData.verified ? 'true' : 'false');
 
-      // Conditionally append social media links if they exist and are not null
-      if (formData.facebook) {
-        data.append('facebook', formData.facebook);
-      }
-      if (formData.instagram) {
-        data.append('instagram', formData.instagram);
-      }
-      if (formData.linkedin) {
-        data.append('linkedin', formData.linkedin); // Use 'linkedin'
-      }
+      if (formData.facebook) data.append('facebook', formData.facebook);
+      if (formData.instagram) data.append('instagram', formData.instagram);
+      if (formData.linkedin) data.append('linkedin', formData.linkedin);
 
-      // Append photo if a new one is selected
-      if (formData.photo) {
-        data.append('logo', formData.photo); // Append the actual File object for 'logo'
-      }
+      if (formData.photo) data.append('logo', formData.photo);
 
       const res = await axios.post(
         `http://localhost:8000/api/clubs/update/${clubId}`,
@@ -96,71 +78,52 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
         {
           headers: {
             'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`, // Include the Bearer token
-            // 'Content-Type': 'multipart/form-data' is automatically set by axios for FormData
+            'Authorization': `Bearer ${token}`,
           },
         }
       );
       return res.data;
     },
     onSuccess: () => {
-      // Invalidate queries related to clubs to refetch fresh data
-      queryClient.invalidateQueries(['club-profile', clubId]); // Invalidate specific club data
-      queryClient.invalidateQueries(['clubs']); // Invalidate all clubs list if you have one (if used elsewhere)
-
-      // Show a subtle success pop-out
+      queryClient.invalidateQueries(['club-profile', clubId]);
+      queryClient.invalidateQueries(['clubs']);
       toast.success('Club profile updated successfully!', {
         position: "top-right",
-        autoClose: 2000, // Close after 2 seconds
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
+        autoClose: 2000,
       });
-
-      // Close the modal/form after a short delay to allow toast to be seen
       setTimeout(() => {
         setEdit(false);
-        window.location.reload(); // Reload the entire page automatically
-      }, 2500); // Wait a bit longer than toast.autoClose
+        window.location.reload();
+      }, 2500);
     },
     onError: (error) => {
       console.error('Error updating club profile:', error.response?.data || error.message);
-      // Show an error pop-out
       toast.error(`Failed to update club profile: ${error.response?.data?.message || error.message || 'Unknown error'}`, {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
     },
   });
 
   const onSubmit = (data) => {
-    // Call the mutation function with form data
     updateClubMutation.mutate(data);
   };
 
   const handlePhotoChange = (file, onChange) => {
-    onChange(file); // Update react-hook-form field
+    onChange(file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(file); // Read the file as a data URL for preview
+      reader.readAsDataURL(file);
     } else {
       setPreview(
         currentClubData?.logo && !currentClubData.logo.startsWith('http')
           ? `http://localhost:8000${currentClubData.logo.startsWith('/') ? '' : '/'}${currentClubData.logo}`
           : currentClubData?.logo || null
-      ); // Revert to original logo if file is cleared
+      );
     }
   };
 
-  // Effect to reset form with currentClubData when it changes or when modal is opened
   useEffect(() => {
     if (edit && currentClubData) {
       reset({
@@ -169,12 +132,11 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
         phone: currentClubData?.phone || '',
         facebook: currentClubData?.facebook || '',
         instagram: currentClubData?.instagram || '',
-        linkedin: currentClubData?.linkedin || '', // Ensure 'linkedin' is used here
+        linkedin: currentClubData?.linkedin || '',
         email: currentClubData?.email || '',
-        photo: null, // Always keep photo null for initial form state; it's a file input
+        photo: null,
         verified: currentClubData?.active || false,
       });
-      // Set preview based on currentClubData logo, if available and not a local file
       setPreview(
         currentClubData?.logo && !currentClubData.logo.startsWith('http')
           ? `http://localhost:8000${currentClubData.logo.startsWith('/') ? '' : '/'}${currentClubData.logo}`
@@ -183,30 +145,41 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
     }
   }, [edit, currentClubData, reset]);
 
-
   return (
-    <div className="bg-[#000000aa] h-[450%] p-6 pt-20 absolute z-[1000000] top-0 right-0 left-0 bottom-0 ">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="bg-[#000000aa] h-[450%] p-8 pt-24 absolute z-[1000000] top-0 right-0 left-0 bottom-0 overflow-auto">
+      <form onSubmit={handleSubmit(onSubmit)}  className="bg-white scale-90 rounded-lg shadow-lg p-8 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Left panel */}
-        <div className="col-span-1 relative flex flex-col items-center bg-gray-100 p-6 rounded-lg">
+        <div className="col-span-1  relative flex flex-col items-center bg-gray-100 p-8 rounded-lg">
           {/* Toggle */}
           <Controller
             control={control}
             name="verified"
             render={({ field }) => (
-              <input
-                type="checkbox"
-                className="absolute top-4 right-4 toggle toggle-primary"
-                checked={field.value}
-                onChange={e => field.onChange(e.target.checked)}
-              />
+              <label className="absolute top-6 right-6 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={e => field.onChange(e.target.checked)}
+                  className="sr-only"
+                />
+                <span
+                  className={`block w-12 h-6 rounded-full transition-colors duration-300 ${
+                    field.value ? 'bg-green-400' : 'bg-gray-400'
+                  }`}
+                />
+                <span
+                  className={`block absolute top-0 left-0 w-6 h-6 rounded-full bg-white shadow transform transition-transform duration-300 ${
+                    field.value ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </label>
             )}
           />
           {/* Photo placeholder/upload */}
-          <div className="size-45 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center">
+          <div className="w-[180px] h-[180px] rounded-full bg-gray-300 overflow-hidden flex items-center justify-center mt-8">
             {preview
-              ? <img src={preview} alt="Preview" className="size-45 object-cover" />
-              : <div className="text-white text-2xl">👤</div>
+              ? <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+              : <div className="text-white text-5xl select-none">👤</div>
             }
           </div>
           <Controller
@@ -218,84 +191,88 @@ const ModifieProfile = ({ edit, setEdit, clubId, currentClubData, token }) => {
                 type="file"
                 accept="image/*"
                 onChange={e => handlePhotoChange(e.target.files[0], field.onChange)}
-                className="mt-3 hidden"
+                className="mt-6 hidden"
               />
             )}
           />
-          <label htmlFor='uploadImage' className="mt-2 text-xl active:scale-[.98] text-gray-700 cursor-pointer "><u>Upload a Photo</u></label>
-          {errors.photo && <p className="text-red-500 text-xs mt-1">{errors.photo.message}</p>}
+          <label htmlFor='uploadImage' className="mt-4 text-2xl active:scale-[.98] text-gray-700 cursor-pointer hover:underline font-semibold">
+            <u>Upload a Photo</u>
+          </label>
 
+          {errors.photo && <p className="text-red-600 text-sm mt-2">{errors.photo.message}</p>}
 
-          <h3 className="font-semibold text-xl mt-6">Identity Verification</h3>
-          <p className="text-xs text-center text-gray-500 leading-7 mt-1">Officially recognized by ENSET<br/>Registered under Student Affairs Department.</p>
+          <h3 className="font-semibold text-2xl mt-10">Identity Verification</h3>
+          <p className="text-base text-center text-gray-600 leading-relaxed mt-3 max-w-xs">
+            Officially recognized by ENSET<br />Registered under Student Affairs Department.
+          </p>
         </div>
 
         {/* Right panel */}
-        <div className="col-span-2 space-y-5">
+        <div className="col-span-2 space-y-8">
           <div>
-            <label className="block text-sm font-medium mb-1">Club name</label>
+            <label className="block text-lg font-medium mb-2">Club name</label>
             <input
               type="text"
               {...register('clubName')}
-              className="w-full border border-gray-300 rounded p-2"
+              className="w-full border border-gray-400 rounded-lg p-3 text-lg"
             />
-            {errors.clubName && <p className="text-red-500 text-xs mt-1">{errors.clubName.message}</p>}
+            {errors.clubName && <p className="text-red-600 text-sm mt-1">{errors.clubName.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-lg font-medium mb-2">Description</label>
             <textarea
               {...register('description')}
-              className="w-full border border-gray-300 rounded p-2 h-32"
+              className="w-full border border-gray-400 rounded-lg p-3 h-40 text-lg resize-none"
             />
-            {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+            {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description.message}</p>}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {['phone', 'facebook', 'instagram', 'linkedin'].map((field, idx) => ( // Changed 'linkedIn' to 'linkedin'
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {['phone', 'facebook', 'instagram', 'linkedin'].map((field, idx) => (
               <div key={idx}>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-lg font-medium mb-2">
                   {field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
                   type="text"
                   {...register(field)}
-                  className="w-full border border-gray-300 rounded p-2"
+                  className="w-full border border-gray-400 rounded-lg p-3 text-lg"
                 />
-                {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field].message}</p>}
+                {errors[field] && <p className="text-red-600 text-sm mt-1">{errors[field].message}</p>}
               </div>
             ))}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-lg font-medium mb-2">Email</label>
             <input
               type="email"
               {...register('email')}
-              className="w-full border border-gray-300 rounded p-2"
+              className="w-full border border-gray-400 rounded-lg p-3 text-lg"
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
-          <div className="flex justify-end items-center space-x-6 pt-4">
+          <div className="flex justify-end items-center space-x-8 pt-6">
             <button
-              onClick={() => {
-                setEdit(false);
-              }}
-              type="button" className="flex items-center text-gray-600 hover:underline">
-              <FontAwesomeIcon icon={faTimes} className="mr-1" /> <span className='pl-2 cursor-pointer'>Cancel</span>
+              onClick={() => setEdit(false)}
+              type="button"
+              className="flex items-center text-gray-700 border border-gray-300 btn rounded-full bg-gray-200 hover:bg-gray-300 px-8 py-2 text-lg font-semibold"
+            >
+              Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || updateClubMutation.isPending} // Disable while submitting or mutating
-              className="bg-gray-600 text-white px-6 py-2 rounded-full disabled:opacity-50 cursor-pointer "
+              disabled={isSubmitting || updateClubMutation.isPending}
+              className="bg-black text-white px-10 py-2 rounded-full disabled:opacity-50 cursor-pointer text-lg font-semibold  transition-colors"
             >
               {updateClubMutation.isPending ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
       </form>
-      <ToastContainer /> {/* Add ToastContainer here */}
+      <ToastContainer />
     </div>
   );
 };

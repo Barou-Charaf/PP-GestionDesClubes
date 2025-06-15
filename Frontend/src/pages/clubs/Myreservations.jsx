@@ -9,17 +9,19 @@ const truncate = (text) =>
   text.length > 30 ? text.slice(0, 30) + '...' : text;
 
 const StatusBadge = ({ status }) => {
-  const colorMap = {
-    Rejected: 'bg-red-500',
-    Confirmed: 'bg-green-500',
-    Finished: 'bg-gray-500',
-    pending: 'bg-yellow-500',
-  };
-  const key = (status || '').toLowerCase();
+  const normalized = (status || '').toLowerCase();
+  let bgColor = 'bg-gray-200';
+  if (normalized === 'rejected') bgColor = 'bg-red-400 text-white';
+  else if (normalized === 'accepted') bgColor = 'bg-green-400 text-white';
+  else if (normalized === 'finished') bgColor = 'bg-gray-100 text-gray-500 border-1 border-gray-300';
+  else if (normalized === 'pending') bgColor = 'bg-yellow-300';
+
+  const label = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
   return (
-    <span className={`rounded-full text-white text-sm font-semibold py-1 px-4 ${colorMap[key] || 'bg-gray-400'}`}>
-      {status}
-    </span>
+    <div className={`text-sm font-semibold py-1 px-2 rounded-full w-[120px] text-center ${bgColor}`}>
+      {label}
+    </div>
   );
 };
 
@@ -66,7 +68,7 @@ const ReservationTable = ({ data, isPast, onCancel, onEdit }) => (
                   </button>
                   <button
                     onClick={() => onCancel(r.id)}
-                    className="btn bg-red-500 avtive:bg-red-400  rounded text-white px-6 py-2 text-sm"
+                    className="btn bg-red-500 active:bg-red-400 rounded text-white px-6 py-2 text-sm"
                   >
                     Cancel
                   </button>
@@ -101,7 +103,6 @@ export default function Myreservations({ setSeeReservations, reservations = [], 
   const [editing, setEditing] = useState(null);
   const qc = useQueryClient();
 
-  // DELETE mutation with Authorization
   const deleteMutation = useMutation({
     mutationFn: (id) =>
       axios.delete(`http://localhost:8000/api/salle_reservation/${id}`, {
@@ -121,12 +122,13 @@ export default function Myreservations({ setSeeReservations, reservations = [], 
     setEditing(res);
   };
 
-  // filter upcoming vs past
-  const filtered = reservations.filter(r =>
-    currentTab === 'past'
-      ? ['Confirmed','Rejected','Finished'].includes(r.status)
-      : !['Confirmed','Rejected','Finished'].includes(r.status)
-  );
+  const filtered = reservations
+    .sort((a, b) => b.id - a.id) // ✅ descending sort by ID
+    .filter(r =>
+      currentTab === 'past'
+        ? r.status?.toLowerCase() !== 'pending'
+        : r.status?.toLowerCase() === 'pending'
+    );
 
   const perPage = 5;
   const totalPages = Math.ceil(filtered.length / perPage);
@@ -144,13 +146,13 @@ export default function Myreservations({ setSeeReservations, reservations = [], 
       <div className="flex gap-8 border-b border-gray-200 mb-6">
         <button
           onClick={() => { setCurrentTab('upcoming'); setCurrentPage(1); }}
-          className={currentTab==='upcoming' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
+          className={currentTab === 'upcoming' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
         >
           Upcoming
         </button>
         <button
           onClick={() => { setCurrentTab('past'); setCurrentPage(1); }}
-          className={currentTab==='past' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
+          className={currentTab === 'past' ? 'border-b-2 border-gray-600 pb-2 font-semibold' : 'text-gray-500 pb-2'}
         >
           Past
         </button>
@@ -173,10 +175,9 @@ export default function Myreservations({ setSeeReservations, reservations = [], 
         <ReserveRoom
           setReserve={() => setEditing(null)}
           clubId={clubId}
-          initialData={editing}  // pre-fill form inputs with existing values
+          initialData={editing}
         />
       )}
     </div>
   );
 }
-

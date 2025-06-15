@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faDownload } from '@fortawesome/free-solid-svg-icons';
 import ReserveMaterial from './ReserveMaterial';
 import MyMaterialReservations from './MyMaterialReservations';
 import Cookies from 'js-cookie';
@@ -34,12 +34,10 @@ const MaterialReservation = ({ materiel, setMateriel, clubId }) => {
     enabled: !!token,
   });
 
-  // 1️⃣ Filter down to *this* club’s reservations
   const myClubReservations = allReservations.filter(
     r => Number(r.clubId) === Number(clubId)
   );
 
-  // 2️⃣ Pagination based on that filtered list
   const perPage = 5;
   const totalPages = Math.ceil(myClubReservations.length / perPage) || 1;
   const idxLast = currentPage * perPage;
@@ -49,6 +47,19 @@ const MaterialReservation = ({ materiel, setMateriel, clubId }) => {
   const paginate = (pageNumber) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
+  };
+
+  const getStatusBadge = (status) => {
+    let color = 'bg-gray-300 text-gray-800';
+    if (status === 'pending') color = 'bg-yellow-100 text-yellow-800 px-5 py-2';
+    else if (status === 'approved') color = 'bg-green-100 text-green-800 px-5 py-2';
+    else if (status === 'rejected') color = 'bg-red-100 text-red-800 px-5 py-2';
+
+    return (
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
+        {status || 'N/A'}
+      </span>
+    );
   };
 
   return (
@@ -97,21 +108,22 @@ const MaterialReservation = ({ materiel, setMateriel, clubId }) => {
                   <td className="px-6 py-4">
                     <a
                       href={reservation.reason}
-                      download
-                      className="btn text-white py-2 w-40"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn size-10 p-0 rounded-full "
+                      title="Open PDF in new tab"
                     >
-                      Download
+                      <FontAwesomeIcon icon={faDownload} className="w-5 h-5 text-white" />
                     </a>
                   </td>
                   <td className="px-6 py-4">{reservation.date}</td>
-                  <td className="px-6 py-4">{reservation.status || 'N/A'}</td>
+                  <td className="px-6 py-4">{getStatusBadge(reservation.status)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
 
-        {/* 3️⃣ Working pagination on the filtered list */}
         <div className="flex justify-center mt-4">
           <button
             onClick={() => paginate(currentPage - 1)}
